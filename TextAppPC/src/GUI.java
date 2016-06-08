@@ -6,11 +6,13 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
 
+//TODO: Fix !text bug. Currently the !text <phone number> <message> works but any message after that, even if sent in another tab, sends to the newest texted user.
+
 public class GUI
 {
     static JFrame frame;
     private static JTextPane messages;
-    private static JTextField message;
+    private static JTextArea message;
     static JTabbedPane tabPane;
     private static JScrollPane scrollPane;
     static int TAB_NUMBER = -1;
@@ -42,7 +44,9 @@ public class GUI
         frame.setLayout(borderLayout);
 
         //Create message bar
-        message = new JTextField();
+        message = new JTextArea();
+        message.setLineWrap(true);
+        message.setWrapStyleWord(true);
         message.addKeyListener(new KeyListener()
         {
             @Override
@@ -104,7 +108,7 @@ public class GUI
 
         //Adds tab pane
         tabPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
-        //tabPane.add("Test", scrollPane);
+
 
         //frame.add(scrollPane, BorderLayout.CENTER);
         frame.add(tabPane, BorderLayout.CENTER);
@@ -119,7 +123,7 @@ public class GUI
         String[] data = messages.split(" ", 3);
         System.out.println("Tab number: " + TAB_NUMBER + ", selected tab: " + tabPane.getSelectedIndex());
         didWork = onNewText(data[1]);
-
+        System.out.println("newText, didWork: " + didWork);
         TextServerThread.sendMessage(data[2]);
     }
 
@@ -127,11 +131,12 @@ public class GUI
     {
         if (TextServerThread.recipientsPhoneNumber.contains(phoneNumber))
             return false;
-
+        System.out.println(TextServerThread.recipientsPhoneNumber.toString());
         createNewTab(phoneNumber);
 
         TextServerThread.recipientsPhoneNumber.put(TAB_NUMBER, phoneNumber);
-        System.out.println(TextServerThread.recipientsPhoneNumber.toString());
+        TextServerThread.recipientsPhoneNumberBackwards.put(phoneNumber, TAB_NUMBER);
+
         return true;
     }
 

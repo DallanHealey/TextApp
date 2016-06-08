@@ -14,11 +14,13 @@ public class TextServerThread implements Runnable
 
     static String usersPhoneNumber;
     static Hashtable<Integer, String> recipientsPhoneNumber;
+    static Hashtable<String, Integer> recipientsPhoneNumberBackwards;
 
     TextServerThread (Socket socket) throws IOException
     {
         this.socket = socket;
-        recipientsPhoneNumber = new Hashtable<Integer, String>();
+        recipientsPhoneNumber = new Hashtable<>();
+        recipientsPhoneNumberBackwards = new Hashtable<>();
 
         //Work around
         String[] args = {};
@@ -52,15 +54,27 @@ public class TextServerThread implements Runnable
                     continue;
                 }
 
-               didWork = GUI.onNewText(data[0]);
-
+                didWork = GUI.onNewText(data[0]);
                 message = data[1];
                 System.out.println(data[0] + ": " + message);
 
+                int tabMessagePlaced;
                 if (didWork)
+                {
                     GUI.insertString(GUI.messagesList.get(GUI.TAB_NUMBER), data[0] + ": " + message + "\n");
+                    tabMessagePlaced = GUI.TAB_NUMBER;
+                }
                 else
-                    GUI.insertString(GUI.messagesList.get(GUI.tabPane.getSelectedIndex()), data[0] + ": " + message + "\n");
+                {
+                    GUI.insertString(GUI.messagesList.get(recipientsPhoneNumberBackwards.get(data[0])), data[0] + ": " + message + "\n");
+                    tabMessagePlaced = GUI.tabPane.getSelectedIndex();
+                }
+
+                if(tabMessagePlaced != GUI.tabPane.getSelectedIndex())
+                {
+                    String currentTitle = GUI.tabPane.getTitleAt(tabMessagePlaced);
+                    GUI.tabPane.setTitleAt(tabMessagePlaced, currentTitle + " (!)");
+                }
             }
         }
         catch (Exception e)
