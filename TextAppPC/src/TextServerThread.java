@@ -1,24 +1,31 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.Hashtable;
 
 public class TextServerThread implements Runnable
 {
-    private Socket socket;
-    private BufferedReader in;
-    protected static PrintStream out;
+    static Socket socket;
+    static BufferedReader in;
+    static PrintStream out;
 
-    protected static String usersPhoneNumber;
-    protected static String recipientsPhoneNumber;
+    static String usersPhoneNumber;
+    static Hashtable<Integer, String> recipientsPhoneNumber;
 
-    TextServerThread(Socket socket)
+    TextServerThread (Socket socket) throws IOException
     {
         this.socket = socket;
+        recipientsPhoneNumber = new Hashtable<Integer, String>();
+
+        //Work around
+        String[] args = {};
+        GUI.main(args);
     }
 
     //Starts the threaded portion
-    public void run()
+    public void run ()
     {
         try
         {
@@ -30,17 +37,29 @@ public class TextServerThread implements Runnable
             System.out.println("User's phone number is: " + usersPhoneNumber);
             GUI.frame.setTitle("Text App  - " + usersPhoneNumber);
 
-            //out.println("Hello Aaron!!!");
-
-            while(TextServer.isRunning)
+            while (TextServer.isRunning)
             {
                 String message = in.readLine();
                 String[] data = message.split(": ");
-                recipientsPhoneNumber = data[0];
-                System.out.println("Data 0: " + data[0]);
+
+                try
+                {
+                    Long.parseLong(data[0]);
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
+
+                boolean didWork = GUI.onNewText(data[0]);
+
                 message = data[1];
-                System.out.println(recipientsPhoneNumber + ": " + message);
-                GUI.messages.getDocument().insertString(GUI.messages.getDocument().getLength(), recipientsPhoneNumber + ": " + message + "\n", null);
+                System.out.println(data[0] + ": " + message);
+
+                if (didWork)
+                    GUI.insertString(GUI.messagesList.get(GUI.TAB_NUMBER), data[0] + ": " + message + "\n");
+                else
+                    GUI.insertString(GUI.messagesList.get(GUI.tabPane.getSelectedIndex()), data[0] + ": " + message + "\n");
             }
         }
         catch (Exception e)
@@ -52,9 +71,7 @@ public class TextServerThread implements Runnable
         {
             try
             {
-                in.close();
-                out.close();
-                socket.close();
+                stop();
             }
             catch (Exception e)
             {
@@ -62,6 +79,20 @@ public class TextServerThread implements Runnable
                 e.printStackTrace();
             }
         }
+    }
+
+    static void sendMessage (String message)
+    {
+        if (recipientsPhoneNumber.get(GUI.tabPane.getSelectedIndex()) == null || recipientsPhoneNumber.isEmpty())
+            return;
+        out.println(recipientsPhoneNumber.get(GUI.tabPane.getSelectedIndex()) + ": " + message);
+    }
+
+    static void stop () throws IOException
+    {
+        in.close();
+        out.close();
+        socket.close();
     }
 }
 

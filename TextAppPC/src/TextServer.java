@@ -10,12 +10,9 @@ public class TextServer
 
     public static void main(String[] args) throws IOException, BadLocationException
     {
-
         SERVERSOCKET = new ServerSocket(1000);
         Socket socket;
         System.out.println("Waiting for a android user...");
-
-        GUI.main(args);
 
         while (isRunning)
         {
