@@ -10,13 +10,13 @@ public class GUI
 {
     static JFrame frame;
     private static JTextPane messages;
-    private static JTextArea message;
+    private static JTextField message;
     static JTabbedPane tabPane;
     private static JScrollPane scrollPane;
     static int TAB_NUMBER = -1;
     static ArrayList<JTextPane> messagesList;
 
-    private static boolean didWork;
+    static boolean didWork;
 
     public static void main (String[] args) throws IOException
     {
@@ -42,7 +42,7 @@ public class GUI
         frame.setLayout(borderLayout);
 
         //Create message bar
-        message = new JTextArea();
+        message = new JTextField();
         message.addKeyListener(new KeyListener()
         {
             @Override

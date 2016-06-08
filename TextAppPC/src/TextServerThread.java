@@ -10,6 +10,7 @@ public class TextServerThread implements Runnable
     static Socket socket;
     static BufferedReader in;
     static PrintStream out;
+    private static boolean didWork;
 
     static String usersPhoneNumber;
     static Hashtable<Integer, String> recipientsPhoneNumber;
@@ -51,7 +52,7 @@ public class TextServerThread implements Runnable
                     continue;
                 }
 
-                boolean didWork = GUI.onNewText(data[0]);
+               didWork = GUI.onNewText(data[0]);
 
                 message = data[1];
                 System.out.println(data[0] + ": " + message);
@@ -85,7 +86,11 @@ public class TextServerThread implements Runnable
     {
         if (recipientsPhoneNumber.get(GUI.tabPane.getSelectedIndex()) == null || recipientsPhoneNumber.isEmpty())
             return;
-        out.println(recipientsPhoneNumber.get(GUI.tabPane.getSelectedIndex()) + ": " + message);
+
+        if(GUI.didWork)
+            out.println(recipientsPhoneNumber.get(GUI.TAB_NUMBER) + ": " + message);
+        else
+            out.println(recipientsPhoneNumber.get(GUI.tabPane.getSelectedIndex()) + ": " + message);
     }
 
     static void stop () throws IOException
@@ -93,6 +98,7 @@ public class TextServerThread implements Runnable
         in.close();
         out.close();
         socket.close();
+        System.exit(0);
     }
 }
 
